@@ -31,7 +31,7 @@ if(isset($_POST['login'])){
       <div class="card shadow-n
       one bg-transparent">
         <div class="card-body p-md-5 text-center">
-          <h2 class="text-white">⸢𝐇𝐀𝐒𝐒𝐀𝐍 𝐀𝐃𝐄𝑳⸥</h2>
+          <h2 class="text-white">⸢𝑨𝑹𝑴𝑿 𝑺𝑻𝑨𝑹⸥</h2>
           <h5 class="text-white"><a href="https://t.me/RX_TW">CONTACT :) TO GET PASS</a></h5>
           <div class="">
             <img src="assets" class="mt-5" width="120" alt="" />
