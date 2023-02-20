@@ -235,7 +235,8 @@ DATE: <span class="badge badge-dark" id="datetime">01/02/2022</span> •  TIME: 
                 
                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="gate/AUTH.php">NONSK</option> 
                 
-                
+                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="gate/api.php">API BASE</option> 
+															       
                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="gate/spotify.php">spotify</option> 
                 
 				
