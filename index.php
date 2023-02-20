@@ -1,17 +1,4 @@
-<?php
-session_start();
-if(!isset($_SESSION['login'])) {
-    header('LOCATION:login/login.php'); die();
-} else {
-}
-if(isset($_POST['but_logout'])){
 
-
-
-    session_destroy();
-    header('Location: index.php');
-}
- ?>
 <!DOCTYPE html>
 <html class="loading">
   <head>
@@ -255,6 +242,7 @@ DATE: <span class="badge badge-dark" id="datetime">01/02/2022</span> •  TIME: 
 <h5> ‎ 𝗖𝗩𝗩 :<span class="badge badge-info float-right cvvs">0</span></h5><hr>
 <h5>  𝗖𝗖𝗡 :<span class="badge badge-primary float-right aprovadas">0</span></h5><hr>
 <h5> 𝗗𝗘𝗔𝗗 :<span class="badge badge-danger float-right reprovadas">0</span></h5><hr>
+<h5>LIMIT CHECK :<span class="badge badge-secondary float-right">500 CC</span></h5>
 </center>
 <center>
         <div class="card mb-2">
