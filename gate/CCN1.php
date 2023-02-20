@@ -1,11 +1,5 @@
 <?php
 
-
-//===================== [ MADE BY checker ] ====================//
-#---------------[ STRIPE MERCHANTE PROXYLESS ]----------------#
-
-
-
 error_reporting(0);
 date_default_timezone_set('America/Buenos_Aires');
 
@@ -46,8 +40,6 @@ if (strlen($ano) == 2) $ano = "20$ano";
 
 
 
-
-
 //================= [ CURL REQUESTS ] =================//
 
 #-------------------[1st REQ]--------------------#
@@ -71,7 +63,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
 
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&card[cvc]='.$cvv.'');  
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'');  
 
 $result1 = curl_exec($ch);  
 
@@ -94,8 +86,6 @@ if (strpos($result1, "rate_limit"))
 break;  
 
 }
-//echo "<br><b>Result1: </b> $result1<br>";
-
 #-------------------[2nd REQ]--------------------#
 
 $x = 0;  
@@ -118,7 +108,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
 
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=eur&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
 
 $result2 = curl_exec($ch);  
 
@@ -141,6 +131,10 @@ if (strpos($result2, "rate_limit"))
 break;  
 
 }
+#########################[BIN LOOK-UP]############################
+
+
+#########################[BIN LOOK-UP]############################
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, 'https://lookup.binlist.net/'.$cc.'');
@@ -168,8 +162,6 @@ $bin = 'Credit';
 $bin = 'Debit';
 }
 
-#########################[Randomizing Details]############################
-
 
 //=================== [ RESPONSES ] ===================//
 
@@ -177,7 +169,7 @@ if(strpos($result2, '"seller_message": "Payment complete."' )) {
    
     
   
-    echo '<span><font size=3.5 color="white"><font class="badge badge-success"> '.$amt.' 𝗖VV 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 WABOU  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a> </font> </i></font> <font class="badge badge-success"> '.$lista.' </i></font> <font size=3.5 color="green"> <font class="badge badge-success"></span>   <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font>  <font class="badge badge-primary">『 🔥 Join 🐉PHC @PHCORNER🔥 』 </font></font><br>';
+    echo '<span><font size=3.5 color="white"><font class="badge badge-success"> '.$amt.' 𝗖𝗖𝗡 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 WABOU  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a> </font> </i></font> <font class="badge badge-success"> '.$lista.' </i></font> <font size=3.5 color="green"> <font class="badge badge-success"></span>   <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font>  <font class="badge badge-primary">『 🔥 Join 🐉PHC @PHCORNER🔥 』 </font></font><br>';
 }
 elseif(strpos($result2,'"cvc_check": "pass"')){
     echo '<font size=3.5 color="white"><font class="badge badge-success">CVV LIVE</i></font> <font class="badge badge-success">'.$lista.'</i></font> <font size=3.5 color="green"> <font class="badge badge-success"> 『★CVV MATCHED★』 </font> <font class="badge badge-secondary"> Bank: '.$bank.'  </font> <font class="badge badge-secondary"> Currency: '.$currency. '    </font>   <font class="badge badge-secondary"> Country:  '.$name.' '.$emoji.'   </font> <font class="badge badge-secondary"> Brand:  '.$brand.'  </font> <font class="badge badge-secondary"> Card:   '.$scheme.'   </font>  <font class="badge badge-secondary"> Type:  '.$type.'</font> <font class="badge badge-primary">『 🔥 Join 🐉PHCORNER @PHC 🔥 』 </font><br>';
@@ -376,14 +368,11 @@ else {
 
 
 
-
-
 //echo "<br><b>Lista:</b> $lista<br>";
 //echo "<br><b>CVV Check:</b> $cvccheck<br>";
 //echo "<b>D_Code:</b> $dcode<br>";
 //echo "<b>Reason:</b> $reason<br>";
 //echo "<b>Risk Level:</b> $riskl<br>";
-
 $end = microtime(true);
 $time_taken = $end - $start;
 
@@ -396,3 +385,5 @@ echo " ᵇʸᵖᵃˢˢⁱⁿᵍ: $x <br>";
 curl_close($ch);
 ob_flush();
 ?>
+
+

@@ -1,15 +1,14 @@
 <?php
 
 
-//===================== [ MADE BY checker ] ====================//
-#---------------[ STRIPE MERCHANTE PROXYLESS ]----------------#
+
 
 
 
 error_reporting(0);
 date_default_timezone_set('America/Buenos_Aires');
-
 $start = microtime(true);
+
 //================ [ FUNCTIONS & LISTA ] ===============//
 
 function GetStr($string, $start, $end){
@@ -94,8 +93,6 @@ if (strpos($result1, "rate_limit"))
 break;  
 
 }
-//echo "<br><b>Result1: </b> $result1<br>";
-
 #-------------------[2nd REQ]--------------------#
 
 $x = 0;  
@@ -118,7 +115,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
 
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=eur&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
 
 $result2 = curl_exec($ch);  
 
@@ -377,12 +374,12 @@ else {
 
 
 
-
 //echo "<br><b>Lista:</b> $lista<br>";
 //echo "<br><b>CVV Check:</b> $cvccheck<br>";
 //echo "<b>D_Code:</b> $dcode<br>";
 //echo "<b>Reason:</b> $reason<br>";
 //echo "<b>Risk Level:</b> $riskl<br>";
+//echo "<b>Seller Message:</b> $seller_msg<br>";
 
 $end = microtime(true);
 $time_taken = $end - $start;
@@ -391,7 +388,6 @@ echo "ᵗⁱᵐᵉ: " . round($time_taken, .5) . " s.";
 
 echo " ᵇʸᵖᵃˢˢⁱⁿᵍ: $x <br>";
 
-//echo "<br><b>Result3: </b> $result2<br>";
 
 curl_close($ch);
 ob_flush();
