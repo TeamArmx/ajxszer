@@ -17,7 +17,7 @@ if(isset($_POST['login'])){
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>𝒸𝒸 𝒸𝒽𝑒𝒸𝓀𝑒𝓇</title>
+  <title>𝑳𝑶𝑮𝑰𝑵 ▽</title>
   <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
   <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
   <link rel="stylesheet" href="assets/css/style.css">
@@ -32,11 +32,11 @@ if(isset($_POST['login'])){
       one bg-transparent">
         <div class="card-body p-md-5 text-center">
           <h2 class="text-white">⸢𝐇𝐀𝐒𝐒𝐀𝐍 𝐀𝐃𝐄𝑳⸥</h2>
-          <h5 class="text-white"><a href="https://t.me/Hassan_Xpro">CONTACT :) TO GET PASS</a></h5>
+          <h5 class="text-white"><a href="https://t.me/RX_TW">CONTACT :) TO GET PASS</a></h5>
           <div class="">
             <img src="assets" class="mt-5" width="120" alt="" />
           </div> 💳​💸​​💳💸
-          <p class="mt-2 text-white">⸢𝐇𝐀𝐒𝐒𝐀𝐍 𝐀𝐃𝐄𝑳⸥ </p><br>
+          <p class="mt-2 text-white">⸢𝑨𝑹𝑴𝑿 𝑺𝑻𝑨𝑹⸥ </p><br>
           <form method="POST" id="signup-form" class="signup-form">
             <div class="form-group">
               <input type="password" class="btn btn-light" name="password" id="password"
