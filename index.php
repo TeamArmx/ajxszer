@@ -229,12 +229,7 @@ DATE: <span class="badge badge-dark" id="datetime">01/02/2022</span> •  TIME: 
                
                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="gate/CVV1.php">𝘾𝙑𝙑 𝘾𝙃𝘼𝙍𝙂𝙀: €1</option>
                 
-                <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="gate/AUTH.php">NONSK</option> 
-                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="api/chk1.php">NONSK</option> 	
-                  <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="api/chk2.php">NONSK</option> 	
-		 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="api/chk3.php">NONSK</option> 											       
-                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="api/chk4.php">NONSK</option> 	
-                 <option style="background:rgba(16, 15, 154, 0.281);color:rgb(25, 208, 1);color:white" value="api/chk5.php">NONSK</option> 	
+             	
 				
                 
 </select>
